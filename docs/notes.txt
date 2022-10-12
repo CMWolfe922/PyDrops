@@ -1,0 +1,6 @@
+> To use the Email service with GMAIL make sure the settings file contains the correct
+configurations and the password that was generated for the app being used.
+
+> I need to setup a bin directory so that I can create a setup bash and powershell
+script. That way people can run the scripts easily to get a ll the dependencies
+needed to work on the project.
