@@ -263,3 +263,14 @@ def post_detail(request, year, month, day, post):
 In this chapter, you learned how to define canonical URLs for models. You created SEO-friendly URLs for blog posts, and you implemented object pagination for your post list. You also learned how to work with Django forms and model forms. You created a system to recommend posts by email and created a comment system for your blog.
 
 In the next chapter, you will create a tagging system for the blog. You will learn how to build complex QuerySets to retrieve objects by similarity. You will learn how to create custom template tags and filters. You will also build a custom sitemap and feed for your blog posts and implement a full-text search functionality for your posts.
+
+
+
+============================================================
+
+## EXTENDING THE BLOG APP:
+---
+
+### Adding Tagging Functionality
+
+> `pip install django-taggit==3.0.0` then once that is complete, hr eill be going
