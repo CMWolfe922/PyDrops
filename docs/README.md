@@ -65,3 +65,70 @@ The Comment model that we have built is not synchronized into the database. We n
 Now I need to add this new model to the admin site to manage comments through a simple interface.
 
 in `admin.py` file in the `blog` app I need to import the `Comment` model and add the `ModelAdmin` class.
+
+```python
+
+from .models import Post, Comment
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'post', 'created', 'active']
+    list_filter = ['active', 'created', 'updated']
+    search_fields = ['name', 'email', 'body']
+```
+
+Now we can manage Comment instances using the administration site.
+
+
+### CREATING FORMS FROM MODELS
+---
+
+We need to build a form to let users comment on `blog` posts. Remember that Django has two base classes that can be used to create forms: `Form` and `ModelForm`. We used the `Form` class to allow users to share posts by email. Now we will use `ModelForm` to take advantage of the existing Comment model and build a form dynamically for it.
+
+Edit the `forms.py` file of your `blog` application and add the following lines:
+
+```python
+from .models import Comment
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['name', 'email', 'body']
+
+```
+
+To create a form from a model, we just indicate which model to build the form for in the `Meta` class of the form. Django will introspect the model and build the corresponding form dynamically.
+
+Each model field type has a corresponding default `form` field type. The attributes of model fields are taken into account for form validation. By default, Django creates a form field for each field contained in the model. However, we can explicitly tell Django which fields to include in the form using the `fields` attribute or define which fields to exclude using the `exclude` attribute. In the `CommentForm` form, we have explicitly included the `name`, `email`, and `body` fields. These are the only fields that will be included in the form.
+
+You can find more information about creating forms from models at [This Link](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/)
+
+
+### HANDLING MODEL FORMS IN VIEWS:
+---
+
+For sharing posts by email, we used the same view to display the form and manage its submission. We used the `HTTP` method to differentiate between both cases; `GET` to display the form and `POST` to submit it. In this case, we will add the comment form to the post detail page, and we will build a separate view to handle the form submission. The new view that processes the form will allow the user to return to the post detail view once the comment has been stored in the database.
+
+Edit the `views.py` file of the `blog` application and add the following code:
+
+```python
+# Also add CommentForm in the imports for .forms
+from .forms import EmailPostForm, `CommentForm`
+from django.views.decorators.http import require_POST
+# ...
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None
+    # A comment was posted
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # Create a Comment object without saving it to the database
+        comment = form.save(commit=False)
+        # Assign the post to the comment
+        comment.post = post
+        # Save the comment to the database
+        comment.save()
+    return render(request, 'blog/post/comment.html',
+                           {'post': post,
+                            'form': form,
+                            'comment': comment})
+```

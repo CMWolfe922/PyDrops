@@ -2,9 +2,10 @@ from queue import Empty
 from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .forms import EmailPostForm
+from .forms import EmailPostForm, CommentForm
 from django.views.generic import ListView
 from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
 
 def post_list(request):
     post_list = Post.published.all()
@@ -86,3 +87,24 @@ def post_share(request, post_id):
     }
 
     return render(request, 'blog/post/share.html', context)
+
+@require_POST
+def post_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+    comment = None
+    # A Comment was posted
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+        # Create a Comment object without saving it to the database
+        comment = form.save(commit=False)
+        # Now assign the post to the comment
+        comment.post = post
+        # Now save the comment to the database
+        comment.save()
+
+    context = {
+        'post': post,
+        'form': form,
+        'comment': comment,
+    }
+    return render(request, 'blog/post/comment.html', context)
