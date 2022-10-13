@@ -243,3 +243,23 @@ def post_detail(request, year, month, day, post):
                    'comments': comments,
                    'form': form})
 ```
+
+##### HERE ARE SOME MORE RESOURCES THAT PROVIDE ADDITIONAL INFORMATION ABOUT SOME OF THE TOPICS ABOVE:
+
+[PACKT PUB CHAPTER 2 GITHUB PAGE](https://github.com/PacktPublishing/Django-4-by-example/tree/main/Chapter02)
+[URL UTILITY FUNCTIONS](https://docs.djangoproject.com/en/4.1/ref/urlresolvers/)
+[URL PATH CONVERTERS](https://docs.djangoproject.com/en/4.1/topics/http/urls/#path-converters)
+[DJANGO PAGINATOR CLASS](https://docs.djangoproject.com/en/4.1/ref/paginator/)
+[INTRO TO CLASS BASED VIEWS](https://docs.djangoproject.com/en/4.1/topics/class-based-views/intro/)
+[SENDING EMAILS WITH DJANGO](https://docs.djangoproject.com/en/4.1/topics/email/)
+[DJANGO FORM FIELD TYPES](https://docs.djangoproject.com/en/4.1/ref/forms/fields/)
+[WORKING WITH FORMS](https://docs.djangoproject.com/en/4.1/topics/forms/)
+[CREATING FORMS FROM MODELS](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/)
+[MANY-TO-ONE MODEL RELATIONSHIPS](https://docs.djangoproject.com/en/4.1/topics/db/examples/many_to_one/)
+
+---
+#### SUMMARY
+
+In this chapter, you learned how to define canonical URLs for models. You created SEO-friendly URLs for blog posts, and you implemented object pagination for your post list. You also learned how to work with Django forms and model forms. You created a system to recommend posts by email and created a comment system for your blog.
+
+In the next chapter, you will create a tagging system for the blog. You will learn how to build complex QuerySets to retrieve objects by similarity. You will learn how to create custom template tags and filters. You will also build a custom sitemap and feed for your blog posts and implement a full-text search functionality for your posts.
