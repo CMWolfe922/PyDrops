@@ -41,15 +41,19 @@ def post_detail(request, year, month, day, post):
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
+    # Get a list of active comments for this post
+    comments = post.comments.filter(active=True)
+    # Now get the form for users to comment
+    form = CommentForm()
+
 
     context = {
         'post': post,
-
+        'comments': comments,
+        'form': form,
     }
 
-    return render(request,
-                  'blog/post/detail.html',
-                  context)
+    return render(request,'blog/post/detail.html', context)
 
 # Create a clasd bassed view
 class PostListView(ListView):

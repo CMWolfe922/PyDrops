@@ -4,3 +4,11 @@ configurations and the password that was generated for the app being used.
 > I need to setup a bin directory so that I can create a setup bash and powershell
 script. That way people can run the scripts easily to get a ll the dependencies
 needed to work on the project.
+
+
+======================================================================================
+>>>>>> CHANGES THAT NEED TO BE MADE 10.13.22
+--------------------------------------------
+
+Right now the comment form asks for name, email and body. It should only be asking for body. The name
+and the email should be automatically generated based on the user who is logged in.

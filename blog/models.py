@@ -48,7 +48,7 @@ class Post(models.Model):
                              self.slug])
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     name = models.CharField(max_length=80)
     email = models.EmailField()

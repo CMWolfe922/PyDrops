@@ -132,3 +132,114 @@ def post_comment(request, post_id):
                             'form': form,
                             'comment': comment})
 ```
+
+We have defined the post_comment view that takes the request object and the post_id variable as parameters. We will be using this view to manage the post submission. We expect the form to be submitted using the HTTP POST method. We use the require_POST decorator provided by Django to only allow POST requests for this view. Django allows you to restrict the HTTP methods allowed for views. Django will throw an HTTP 405 (method not allowed) error if you try to access the view with any other HTTP method.
+
+In this view, we have implemented the following actions:
+
+    1. We retrieve a published post by its id using the get_object_or_404() shortcut.
+    2. We define a comment variable with the initial value None. This variable will be used to store the comment object when it gets created.
+    3. We instantiate the form using the submitted POST data and validate it using the is_valid() method. If the form is invalid, the template is rendered with the validation errors.
+    4. If the form is valid, we create a new Comment object by calling the form’s save() method and assign it to the new_comment variable, as follows:
+        - `comment = form.save(commit=False)`
+
+- The `save()` method method is available for `ModelForm` but NOT for `Form`
+
+- We also need to assign the `Post` to the `Comment` we created.
+    `comment.post = post`
+
+
+##### Creating a URL pattern for the Comment view
+
+```python
+from django.urls import path
+from . import views
+app_name = 'blog'
+
+urlpattterns = [
+    ...
+    path('<int:post_id>/comment/', views.post_comment, name='post_comment'),
+]
+```
+
+
+### CREATING TEMPLATES FOR THE COMMENT FORM:
+---
+
+We will create a template for the comment form that we will use in two places:
+
+1. In the post detail template associated with the `post_detail` view to let users publish comments.
+2. In the post comment template associated with the `post_comment` vieww to display the form again if there are any form errors.
+
+So I will create the comment template and use the `{% include %}` template tag to include the comment template in the other two templates.
+
+- So in the `template/blog/post/` directory I will create a directory called `includes/`. Here I will add the `comment_form.html` file.
+
+> So now I need to edit the new `blog/post/includes/comment_form.html` template with this code:
+
+```html
+
+<h2>Add a new comment</h2>
+<form action="{% url "blog:post_comment" post.id %}" method="post">
+  {{ form.as_p }}
+  {% csrf_token %}
+  <p><input type="submit" value="Add comment"></p>
+</form>
+```
+
+In this template, we build the `action` URL of the HTML `<form>` element dynamically using the `{% url %}` template tag. We build the URL of the `post_comment` view that will process the form. We display the form rendered in paragraphs and we include `{% csrf_token %}` for CSRF protection because this form will be submitted with the `POST` method.
+
+Create a new file in the `templates/blog/post/` directory of the blog application and name it `comment.html`.
+
+In that file add this code:
+
+```html
+{% extends "blog/base.html" %}
+{% block title %}Add a comment{% endblock %}
+{% block content %}
+  {% if comment %}
+    <h2>Your comment has been added.</h2>
+    <p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
+  {% else %}
+    {% include "blog/post/includes/comment_form.html" %}
+  {% endif %}
+{% endblock %}
+```
+
+This is the template for the post comment view. In this view, we expect the form to be submitted via the `POST` method. The template covers two different scenarios:
+
+    > 1. If the form data submitted is valid, the comment variable will contain the comment object that was created, and a success message will be displayed.
+    > 2. If the form data submitted is not valid, the comment variable will be None. In this case we will display the comment form. We use the {% include %} template tag to include the comment_form.html template that we have previously created.
+
+
+#### Now I need to add comments to the post detail view:
+
+> For this I will have to edit the views.py file and edit the post_detail view with the following changes:
+
+```python
+
+def post_detail(request, year, month, day, post):
+    post = get_object_or_404(Post,
+                             status=Post.Status.PUBLISHED,
+                             slug=post,
+                             publish__year=year,
+                             publish__month=month,
+                             publish__day=day)
+
+    #===========================================#
+    # ================ NEW ADDITION ============#
+    #===========================================#
+    # List of active comments for this post
+    comments = post.comments.filter(active=True)
+    # Form for users to comment
+    form = CommentForm()
+    #==========================================#
+    return render(request,
+                  'blog/post/detail.html',
+                  {'post': post,
+                  # ================== #
+                  # === NEW ADDITION = #
+                  # ================== #
+                   'comments': comments,
+                   'form': form})
+```
