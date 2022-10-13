@@ -2,7 +2,6 @@ from queue import Empty
 from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .forms import EmailPostform
 from django.views.generic import ListView
 
 def post_list(request):
@@ -58,3 +57,21 @@ class PostListView(ListView):
     context_object_name = 'posts'
     paginate_by = 3
     template_name = 'blog/post/list.html'
+
+
+# Create the form view
+def post_share(request, post_id):
+    # retrieve post by id
+    post = get_object_or_404(Post, id=post_id, status=Post.status.PUBLISHED)
+    if request.method == 'POST':
+        # Form was submitted
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            # Form fields passed validation
+            cd = form.cleaned_data
+            # ... send email
+    else:
+        form = EmailPostForm()
+
+    # create a context di,,cxx\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\--------------------------------------------------------------------------------------
+    return render(request, 'blog/post/share.html')
