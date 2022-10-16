@@ -10,16 +10,14 @@
 {{ post.body|linebreaks }}
 <p>
     <a href="{% url 'blog:post_share' post.id %}">
-        Share post..
+        Share this post
     </a>
 </p>
-<!-- Getting the comments to display next to their post -->
 {% with comments.count as total_comments %}
 <h2>
     {{ total_comments }} comment{{ total_comments|pluralize }}
 </h2>
 {% endwith %}
-<!-- Now iterate throught the comments list to display them -->
 {% for comment in comments %}
 <div class="comment">
     <p class="info">
@@ -29,8 +27,7 @@
     {{ comment.body|linebreaks }}
 </div>
 {% empty %}
-<p>There are no comments to display..</p>
+<p>No comments posted yet. Be the first to comment!</p>
 {% endfor %}
-<!-- Now include the comment form at the bottom of the comments/under the no comments message -->
 {% include "blog/post/includes/comment_form.html" %}
 {% endblock %}

@@ -27,13 +27,13 @@ def post_list(request):
         posts = paginator.page(paginator.num_pages)
 
     # ------------------------------------------------ #
+    # URL to pass to the render method:
+    URL = 'blog/post/list.html'
     # context dictionary that gets passed to the render function
     context = {
         'posts': posts,
         }
-    return render(request,
-                 'blog/post/list.html',
-                 context)
+    return render(request, URL, context)
 
 
 def post_detail(request, year, month, day, post):
@@ -48,13 +48,16 @@ def post_detail(request, year, month, day, post):
     # Now get the form for users to comment
     form = CommentForm()
 
+    # URL that gets passed to the render function
+    URL = 'blog/post/detail.html'
+
     context = {
         'post': post,
         'comments': comments,
         'form': form,
     }
 
-    return render(request, 'blog/post/detail.html', context)
+    return render(request, URL, context)
 
 
 # Create a clasd bassed view
@@ -68,12 +71,12 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 
-# Create a form view 
+# Create a form view
 def post_share(request, post_id):
     # retrieve post by ID
     post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
     if request.method == 'POST':
-        # form was submitted 
+        # form was submitted
         form = EmailPostForm(request.POST)
         if form.is_valid():
             # Form fields passed validation
@@ -86,14 +89,16 @@ def post_share(request, post_id):
             sent = True
     else:
         form = EmailPostForm()
-    
+
+    URL = 'blog/post/share.html'
+
     context = {
         'post': post,
         'form': form,
         'sent': sent,
     }
 
-    return render(request,'blog/post/share.html', context)
+    return render(request, URL, context)
 
 
 @require_POST
@@ -110,9 +115,12 @@ def post_comment(request, post_id):
         # Now save the comment to the database
         comment.save()
 
+    URL = 'blog/post/comment.html'
+
     context = {
         'post': post,
         'form': form,
         'comment': comment,
     }
-    return render(request, 'blog/post/comment.html', context)
+
+    return render(request, URL, context)

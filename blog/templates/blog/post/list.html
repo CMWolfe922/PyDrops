@@ -1,9 +1,10 @@
 {% extends "blog/base.html" %}
 
-{% block title %}PyDrops{% endblock %}
+{% block title %}My Blog{% endblock %}
 
 {% block content %}
 <h1>PyDrops</h1>
+<p>Checkout what dropped today!</p>
 {% for post in posts %}
 <h2>
     <a href="{{ post.get_absolute_url }}">
