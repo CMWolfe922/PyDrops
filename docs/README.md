@@ -404,3 +404,27 @@ In the preceding code, you display an unordered list of posts using the `latest_
   </body>
 </html>
 ```
+
+### Creating a Template Tag That Returns a QuerySet:
+
+---
+
+> Finally, we will create a simple template tag that returns a value. We will store the result in a variable that can be reused, rather than outputting it directly. We will create a tag to display the most commented posts.
+
+- Edit the `templatetags/blog_tags.py` file and add the following import and template tag to it:
+
+```python
+from django.db.models import Count
+@register.simple_tag
+def get_most_commented_posts(count=5):
+    return Post.published.annotate(
+               total_comments=Count('comments')
+           ).order_by('-total_comments')[:count]
+
+```
+
+In the preceding template tag, you build a QuerySet using the `annotate()` function to aggregate the total number of comments for each post. You use the `Count` aggregation function to store the number of comments in the computed `total_comments` field for each `Post` object. You order the QuerySet by the computed field in descending order. You also provide an optional `count` variable to limit the total number of objects returned.
+
+In addition to `Count`, Django offers the aggregation functions `Avg`, `Max`, `Min`, and `Sum`. You can read more about aggregation functions at [Click Here for information on db aggregation](https://docs.djangoproject.com/en/4.1/topics/db/aggregation/)
+
+Next, edit the `blog/base.html` template and add the following code highlighted in bold:

@@ -21,6 +21,17 @@
         <h3>Latest Posts:</h3>
         <!-- Adding the number after the show_latest_posts tag, tells the template how many posts to render -->
         {% show_latest_posts 3 %}
+        <!-- Show the most commented on posts -->
+        <h3>Most Commented Posts:</h3>
+        {% get_most_commented_posts as most_commented_posts %}
+        <ul>
+            {% for post in most_commented_posts %}
+            <li>
+                <a href="{{ post.get_absolute_url  }}">{{ post.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="back-home"><a href="{% url 'blog:post_list' %}">Back to Home</a></p>
     </div>
 </body>
 

@@ -5,7 +5,7 @@
 {% block content %}
 {% if comment %}
 <h2>Comment successfully added!</h2>
-<p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
+<p class="back-to-post"><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
 {% else %}
 {% include "blog/post/includes/comment_form.html" %}
 {% endif %}
