@@ -1,10 +1,11 @@
+{% load blog_tags %}
 {% load static %}
 <!DOCTYPE html>
 <html>
 
 <head>
     <title>{% block title %}{% endblock %}</title>
-    <link href="{% static " css/blog.css" %}" rel="stylesheet">
+    <link href="{% static 'css/blog.css' %}" rel="stylesheet">
 </head>
 
 <body>
@@ -15,6 +16,7 @@
     <div id="sidebar">
         <h2>PyDrops:</h2>
         <p>A social community for python developers to come and drop knowledge for other developers.</p>
+        <p class="blog-count">Total Blogs: {% total_posts %}</p>
     </div>
 </body>
 

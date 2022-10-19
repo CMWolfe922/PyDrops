@@ -48,7 +48,7 @@ class Comments(models.Model):
 
 This is the Comment model. We have added a ForeignKey field to associate each comment with a single post. This many-to-one relationship is defined in the Comment model because each comment will be made on one post, and each post may have multiple comments.
 
-The related_name attribute allows you to name the attribute that you use for the relationship from the related object back to this one. We can retrieve the post of a comment object using comment.post and retrieve all comments associated with a post object using post.comments.all(). If you don’t define the related_name attribute, Django will use the name of the model in lowercase, followed by _set (that is, comment_set) to name the relationship of the related object to the object of the model, where this relationship has been defined.
+The related_name attribute allows you to name the attribute that you use for the relationship from the related object back to this one. We can retrieve the post of a comment object using comment.post and retrieve all comments associated with a post object using post.comments.all(). If you don’t define the related_name attribute, Django will use the name of the model in lowercase, followed by \_set (that is, comment_set) to name the relationship of the related object to the object of the model, where this relationship has been defined.
 
 You can learn more about many-to-one relationships at [this link](https://docs.djangoproject.com/en/4.1/topics/db/examples/many_to_one/)
 
@@ -58,8 +58,8 @@ We have defined the created field to store the date and time when the comment wa
 
 The Comment model that we have built is not synchronized into the database. We need to generate a new database migration to create the corresponding database table.
 
-
 ### ADDING COMMENTS TO THE ADMINISTRATION SITE
+
 ---
 
 Now I need to add this new model to the admin site to manage comments through a simple interface.
@@ -78,8 +78,8 @@ class CommentAdmin(admin.ModelAdmin):
 
 Now we can manage Comment instances using the administration site.
 
-
 ### CREATING FORMS FROM MODELS
+
 ---
 
 We need to build a form to let users comment on `blog` posts. Remember that Django has two base classes that can be used to create forms: `Form` and `ModelForm`. We used the `Form` class to allow users to share posts by email. Now we will use `ModelForm` to take advantage of the existing Comment model and build a form dynamically for it.
@@ -101,8 +101,8 @@ Each model field type has a corresponding default `form` field type. The attribu
 
 You can find more information about creating forms from models at [This Link](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/)
 
-
 ### HANDLING MODEL FORMS IN VIEWS:
+
 ---
 
 For sharing posts by email, we used the same view to display the form and manage its submission. We used the `HTTP` method to differentiate between both cases; `GET` to display the form and `POST` to submit it. In this case, we will add the comment form to the post detail page, and we will build a separate view to handle the form submission. The new view that processes the form will allow the user to return to the post detail view once the comment has been stored in the database.
@@ -146,8 +146,7 @@ In this view, we have implemented the following actions:
 - The `save()` method method is available for `ModelForm` but NOT for `Form`
 
 - We also need to assign the `Post` to the `Comment` we created.
-    `comment.post = post`
-
+  `comment.post = post`
 
 ##### Creating a URL pattern for the Comment view
 
@@ -162,8 +161,8 @@ urlpattterns = [
 ]
 ```
 
-
 ### CREATING TEMPLATES FOR THE COMMENT FORM:
+
 ---
 
 We will create a template for the comment form that we will use in two places:
@@ -194,23 +193,18 @@ Create a new file in the `templates/blog/post/` directory of the blog applicatio
 In that file add this code:
 
 ```html
-{% extends "blog/base.html" %}
-{% block title %}Add a comment{% endblock %}
-{% block content %}
-  {% if comment %}
-    <h2>Your comment has been added.</h2>
-    <p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
-  {% else %}
-    {% include "blog/post/includes/comment_form.html" %}
-  {% endif %}
-{% endblock %}
+{% extends "blog/base.html" %} {% block title %}Add a comment{% endblock %} {%
+block content %} {% if comment %}
+<h2>Your comment has been added.</h2>
+<p><a href="{{ post.get_absolute_url }}">Back to the post</a></p>
+{% else %} {% include "blog/post/includes/comment_form.html" %} {% endif %} {%
+endblock %}
 ```
 
 This is the template for the post comment view. In this view, we expect the form to be submitted via the `POST` method. The template covers two different scenarios:
 
     > 1. If the form data submitted is valid, the comment variable will contain the comment object that was created, and a success message will be displayed.
     > 2. If the form data submitted is not valid, the comment variable will be None. In this case we will display the comment form. We use the {% include %} template tag to include the comment_form.html template that we have previously created.
-
 
 #### Now I need to add comments to the post detail view:
 
@@ -258,19 +252,93 @@ def post_detail(request, year, month, day, post):
 [MANY-TO-ONE MODEL RELATIONSHIPS](https://docs.djangoproject.com/en/4.1/topics/db/examples/many_to_one/)
 
 ---
+
 #### SUMMARY
 
 In this chapter, you learned how to define canonical URLs for models. You created SEO-friendly URLs for blog posts, and you implemented object pagination for your post list. You also learned how to work with Django forms and model forms. You created a system to recommend posts by email and created a comment system for your blog.
 
 In the next chapter, you will create a tagging system for the blog. You will learn how to build complex QuerySets to retrieve objects by similarity. You will learn how to create custom template tags and filters. You will also build a custom sitemap and feed for your blog posts and implement a full-text search functionality for your posts.
 
-
-
 ============================================================
 
 ## EXTENDING THE BLOG APP:
+
 ---
 
 ### Adding Tagging Functionality
 
 > `pip install django-taggit==3.0.0` then once that is complete, hr eill be going
+
+---
+
+#### Implementing custom template tags
+
+> Django provides the following helper functions that allow you to easily create template tags:
+
+- `simple_tag`: Processes the given data and returns a string
+- `inclusion_tag`: Processes the given data and returns a rendered template
+- Template tags must live inside Django applications.
+
+Inside your blog application directory, create a new directory, name it `templatetags`, and add an empty `__init__.py` file to it. Create another file in the same folder and name it `blog_tags.py`. The file structure of the blog application should look like the following:
+
+```
+blog/
+    __init__.py
+    models.py
+    ...
+    templatetags/
+        __init__.py
+        blog_tags.py
+
+```
+
+> The way you name the file is important. You will use the name of this module to load tags in templates.
+
+#### Creating a simple template tag
+
+---
+
+> Let’s start by creating a simple tag to retrieve the total posts that have been published on the blog.
+
+- Edit the `templatetags/blog_tags.py` file you just created and add the following code:
+
+```python
+
+from django import template
+from ..models import Post
+register = template.Library()
+@register.simple_tag
+def total_posts():
+    return Post.published.count()
+
+```
+
+- We have created a simple template tag that returns the number of posts published in the blog.
+
+Each module that contains template tags needs to define a variable called `register` to be a valid tag library. This variable is an instance of `template.Library`, and it’s used to register the template tags and filters of the application.
+
+In the preceding code, we have defined a tag called `total_posts` with a simple Python function. We have added the `@register.simple_tag` decorator to the function, to register it as a simple tag. Django will use the function’s name as the tag name. If you want to register it using a different name, you can do so by specifying a `name` attribute, such as `@register.simple_tag(name='my_tag')`.
+
+> **After adding a new template tags module, you will need to restart the Django development server in order to use the new tags and filters in templates**.
+
+Before using custom template tags, we have to make them available for the template using the `{% load %}` tag. As mentioned before, we need to use the name of the Python module containing your template tags and filters.
+
+Edit the `blog/templates/base.html` template and add `{% load blog_tags %}` at the top of it to load your template tags module. Then, use the tag you created to display your total posts, as follows. The new lines are highlighted in bold:
+
+```html
+{% load blog_tags %} {% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static "css/blog.css" %}" rel="stylesheet">
+  </head>
+  <body>
+    <div id="content">{% block content %} {% endblock %}</div>
+    <div id="sidebar">
+      <h2>My blog</h2>
+      <p>This is my blog. I've written {% total_posts %} posts so far.</p>
+    </div>
+  </body>
+</html>
+```
