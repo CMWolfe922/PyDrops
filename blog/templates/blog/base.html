@@ -17,6 +17,10 @@
         <h2>PyDrops:</h2>
         <p>A social community for python developers to come and drop knowledge for other developers.</p>
         <p class="blog-count">Total Blogs: {% total_posts %}</p>
+        <!-- The newly added piece to the base template file -->
+        <h3>Latest Posts:</h3>
+        <!-- Adding the number after the show_latest_posts tag, tells the template how many posts to render -->
+        {% show_latest_posts 3 %}
     </div>
 </body>
 

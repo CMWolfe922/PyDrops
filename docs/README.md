@@ -342,3 +342,65 @@ Edit the `blog/templates/base.html` template and add `{% load blog_tags %}` at t
   </body>
 </html>
 ```
+
+### Creating an inclusion template tag
+
+---
+
+> We will create another tag to display the latest posts in the sidebar of the blog. This time, we will implement an inclusion tag. Using an inclusion tag, you can render a template with context variables returned by your template tag.
+
+- Edit the templatetags/blog_tags.py file and add the following code:
+
+```python
+@register.inclusion_tag('blog/post/latest_posts.html')
+def show_latest_posts(count=5):
+    latest_posts = Post.published.order_by('-publish')[:count]
+    return {'latest_posts': latest_posts}
+```
+
+In the preceding code, we have registered the template tag using the `@register.inclusion_tag` decorator. We have specified the template that will be rendered with the returned values using `blog/post/latest_posts.html`. The template tag will accept an optional `count` parameter that defaults to 5. This parameter will allow us to specify the number of posts to display. We use this variable to limit the results of the query `Post.published.order_by('-publish')[:count]`.
+
+Note that the function returns a dictionary of variables instead of a simple value. Inclusion tags have to return a dictionary of values, which is used as the context to render the specified template. The template tag we just created allows us to specify the optional number of posts to display as `{% show_latest_posts 3 %}`.
+
+Now, create a new template file under `blog/post/` and name it `latest_posts.html`.
+
+Edit the new `blog/post/latest_posts.html` template and add the following code to it:
+
+```html
+<ul>
+  {% for post in latest_posts %}
+  <li>
+    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+  </li>
+  {% endfor %}
+</ul>
+```
+
+In the preceding code, you display an unordered list of posts using the `latest_posts` variable returned by your template tag. Now, edit the `blog/base.html` template and add the new template tag to display the last three posts, as follows. The new lines are highlighted in bold:
+
+```html
+{% load blog_tags %} {% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static 'css/blog.css' %}" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="content">{% block content %} {% endblock %}</div>
+    <div id="sidebar">
+      <h2>PyDrops:</h2>
+      <p>
+        A social community for python developers to come and drop knowledge for
+        other developers.
+      </p>
+      <p class="blog-count">Total Blogs: {% total_posts %}</p>
+      <!-- The newly added piece to the base template file -->
+      <h3>Latest Posts:</h3>
+      <!-- Adding the number after the show_latest_posts tag, tells the template how many posts to render -->
+      {% show_latest_posts 3 %}
+    </div>
+  </body>
+</html>
+```
