@@ -38,7 +38,7 @@ p.date {
     color: #ccc;
     font-family: georgia, serif;
     font-size: 12px;
-    font-style: italic;
+    /* font-style: italic; */
 }
 
 /* pagination */
@@ -95,4 +95,11 @@ input[type=submit] {
     font-weight: bold;
     font-size: 12px;
     color: #666;
+}
+
+p.tags {
+    font-weight: bold;
+    font-size: 10px;
+    color: rgb(31, 170, 117);
+
 }

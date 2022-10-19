@@ -2,6 +2,11 @@ from django import template
 from django.db.models import Count
 from ..models import Post
 
+# These imports are for the markdow_format function:
+from django.utils.safestring import mark_safe
+import markdown
+
+
 register = template.Library()
 
 @register.simple_tag
@@ -22,3 +27,9 @@ def show_latest_posts(count=5):
 def get_most_commented_posts(count=5):
     """Retrieves the top 5 most commented on posts"""
     return Post.published.annotate(total_comments=Count('comments')).order_by('-total_comments')[:count]
+
+
+# This allows for the use of markdown syntax inside the blog posts:
+@register.filter(name='markdown')
+def markdown_format(text):
+    return mark_safe(markdown.markdown(text))
