@@ -43,7 +43,14 @@ INSTALLED_APPS = [
 
     # Third Party Apps
     'taggit',
+
+    # Django Additional Apps:
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
 ]
+
+# Create a SITE_ID setting
+SITE_ID = 1
 
 
 MIDDLEWARE = [

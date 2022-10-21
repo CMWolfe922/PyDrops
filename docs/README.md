@@ -618,3 +618,99 @@ Here is a list:
 - Three
   And a [link to the Django website](https://www.djangoproject.com/).
 ```
+
+
+### Adding a sitemap to the site
+---
+
+> Django comes with a sitemap framework, which allows you to generate sitemaps for your site dynamically. A sitemap is an XML file that tells search engines the pages of your website, their relevance, and how frequently they are updated. Using a sitemap will make your site more visible in search engine rankings because it helps crawlers to index your website’s content.
+
+The Django sitemap framework depends on `django.contrib.sites`, which allows you to associate objects to particular websites that are running with your project. This comes in handy when you want to run multiple sites using a single Django project. To install the sitemap framework, we will need to activate both the sites and the sitemap applications in your project.
+
+Edit the `settings.py` file of the project and add `django.contrib.sites` and `django.contrib.sitemaps` to the `INSTALLED_APPS` setting. Also, define a new setting for the site ID, as follows. New code is highlighted in bold:
+
+```python
+# ...
+# ADD THE SITE_ID AND SET IT TO 1
+SITE_ID = 1
+# Application definition
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'blog.apps.BlogConfig',
+    'taggit',
+
+    # THEN ADD THESE TWO DJANGO GENERIC APPS
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
+]
+
+```
+
+> Now, run the following command from the shell prompt to create the tables of the Django site application in the database:
+
+`python manage.py migrate`
+
+I will see:
+```
+Applying sites.0001_initial... OK
+Applying sites.0002_alter_domain_unique... OK
+
+```
+
+The sites application is now synced with the database.
+
+Next, create a new file inside your blog application directory and name it sitemaps.py. Open the file and add the following code to it:
+
+```python
+from django.contrib.sitemaps import Sitemap
+from .models import Post
+class PostSitemap(Sitemap):
+    changefreq = 'weekly'
+    priority = 0.9
+    def items(self):
+        return Post.published.all()
+    def lastmod(self, obj):
+        return obj.updated
+
+```
+
+I have defined a custom sitemap by inheriting the `Sitemap` class of the `sitemaps` module. The `changefreq` and `priority` attributes indicate the change frequency of your post pages and their relevance in your website (the maximum value is 1).
+
+The `items()` method returns the QuerySet of objects to include in this sitemap. By default, Django calls the `get_absolute_url()` method on each object to retrieve its URL. Remember that we implemented this method in Chapter 2, Enhancing Your Blog with Advanced Features, to define the canonical URL for posts. If you want to specify the URL for each object, you can add a location method to your sitemap class.
+
+The lastmod method receives each object returned by `items()` and returns the last time the object was modified.
+
+Both the changefreq and priority attributes can be either methods or attributes. [You can take a look at the complete sitemap reference in the official Django documentation located at](https://docs.djangoproject.com/en/4.1/ref/contrib/sitemaps/)
+
+We have created the sitemap. Now we just need to create an URL for it.
+
+Edit the main urls.py file of the mysite project and add the sitemap, as follows. New lines are highlighted in bold:
+
+```python
+from django.urls import path, include
+from django.contrib import admin
+
+# THIS WAS ADDED:
+# ----------------------------------------------- #
+from django.contrib.sitemaps.views import sitemap
+from blog.sitemaps import PostSitemap
+sitemaps = {
+    'posts': PostSitemap,
+}
+# ----------------------------------------------- #
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('blog/', include('blog.urls', namespace='blog')),
+    # AND THIS
+    # ----------------------------------------------- #
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps},
+         name='django.contrib.sitemaps.views.sitemap')
+    # ----------------------------------------------- #
+]
+
+```
