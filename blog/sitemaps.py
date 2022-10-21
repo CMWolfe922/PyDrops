@@ -8,7 +8,7 @@ class PostSitemap(Sitemap):
 
     # create an item method
     def items(self):
-        return Post.objects.all()
+        return Post.published.all()
 
     # create a method that shows the last modified posts
     def lastmod(self, obj):

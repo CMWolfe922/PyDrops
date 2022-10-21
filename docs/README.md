@@ -714,3 +714,133 @@ urlpatterns = [
 ]
 
 ```
+In the preceding code, we have included the required imports and have defined a sitemaps dictionary. Multiple sitemaps can be defined for the site. We have defined a URL pattern that matches with the sitemap.xml pattern and uses the sitemap view provided by Django. The sitemaps dictionary is passed to the sitemap view.
+
+Start the development from the shell prompt with the following command:
+`python manage.py runserver`
+
+
+Open http://127.0.0.1:8000/sitemap.xml in your browser. You will see an XML output including all of the published posts like this:
+
+```xml
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>http://example.com/blog/2022/1/22/markdown-post/</loc>
+    <lastmod>2022-01-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://example.com/blog/2022/1/3/notes-on-duke-ellington/</loc>
+    <lastmod>2022-01-03</lastmod>
+    <changefreq>weekly</changefreqa>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://example.com/blog/2022/1/2/who-was-miles-davis/</loc>
+    <lastmod>2022-01-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://example.com/blog/2022/1/1/who-was-django-reinhardt/</loc>
+    <lastmod>2022-01-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://example.com/blog/2022/1/1/another-post/</loc>
+    <lastmod>2022-01-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+</urlset>
+
+```
+
+The URL for each Post object is built by calling its get_absolute_url() method.
+
+The lastmod attribute corresponds to the post updated date field, as you specified in your sitemap, and the changefreq and priority attributes are also taken from the PostSitemap class.
+
+The domain used to build the URLs is example.com. This domain comes from a Site object stored in the database. This default object was created when you synced the site’s framework with your database. [You can read more about the sites framework at](https://docs.djangoproject.com/en/4.1/ref/contrib/sites/).
+
+Open http://127.0.0.1:8000/admin/sites/site/
+
+Here, you can set the domain or host to be used by the site’s framework and the applications that depend on it. To generate URLs that exist in your local environment, change the domain name to localhost:8000
+
+Open http://127.0.0.1:8000/sitemap.xml in your browser again. The URLs displayed in your feed will now use the new hostname and look like http://localhost:8000/blog/2022/1/22/markdown-post/. Links are now accessible in your local environment. In a production environment, you will have to use your website’s domain to generate absolute URLs.
+
+
+### Creating feeds for blog posts
+---
+
+Django has a built-in syndication feed framework that you can use to dynamically generate RSS or Atom feeds in a similar manner to creating sitemaps using the site’s framework. A web feed is a data format (usually XML) that provides users with the most recently updated content. Users can subscribe to the feed using a feed aggregator, a software that is used to read feeds and get new content notifications.
+
+Create a new file in your blog application directory and name it feeds.py. Add the following lines to it:
+
+```python
+import markdown
+from django.contrib.syndication.views import Feed
+from django.template.defaultfilters import truncatewords_html
+from django.urls import reverse_lazy
+from .models import Post
+class LatestPostsFeed(Feed):
+    title = 'My blog'
+    link = reverse_lazy('blog:post_list')
+    description = 'New posts of my blog.'
+    def items(self):
+        return Post.published.all()[:5]
+    def item_title(self, item):
+        return item.title
+    def item_description(self, item):
+        return truncatewords_html(markdown.markdown(item.body), 30)
+    def item_pubdate(self, item):
+        return item.publish
+
+```
+
+In the preceding code, we have defined a feed by subclassing the Feed class of the syndication framework. The title, link, and description attributes correspond to the <title>, <link>, and <description> RSS elements, respectively.
+
+We use reverse_lazy() to generate the URL for the link attribute. The reverse() method allows you to build URLs by their name and pass optional parameters. We used reverse() in Chapter 2, Enhancing Your Blog with Advanced Features.
+
+The reverse_lazy() utility function is a lazily evaluated version of reverse(). It allows you to use a URL reversal before the project’s URL configuration is loaded.
+
+The items() method retrieves the objects to be included in the feed. We retrieve the last five published posts to include them in the feed.
+
+The item_title(), item_description(), and item_pubdate() methods will receive each object returned by items() and return the title, description and publication date for each item.
+
+In the item_description() method, we use the markdown() function to convert Markdown content to HTML and the truncatewords_html() template filter function to cut the description of posts after 30 words, avoiding unclosed HTML tags.
+
+Now, edit the blog/urls.py file, import the LatestPostsFeed class, and instantiate the feed in a new URL pattern, as follows:
+
+```python
+
+from django.urls import path
+from . import views
+# ---------------------------------------------- #
+# NEW IMPORT
+# ---------------------------------------------- #
+from .feeds import LatestPostsFeed
+
+
+app_name = 'blog'
+urlpatterns = [
+    # Post views
+    path('', views.post_list, name='post_list'),
+    # path('', views.PostListView.as_view(), name='post_list'),
+    path('tag/<slug:tag_slug>/',
+         views.post_list, name='post_list_by_tag'),
+    path('<int:year>/<int:month>/<int:day>/<slug:post>/',
+         views.post_detail,
+         name='post_detail'),
+    path('<int:post_id>/share/',
+         views.post_share, name='post_share'),
+    path('<int:post_id>/comment/',
+         views.post_comment, name='post_comment'),
+         # ---------------------------------------------- #
+         # NEW PATH
+         # ---------------------------------------------- #
+    path('feed/', LatestPostsFeed(), name='post_feed'),
+]
+
+```

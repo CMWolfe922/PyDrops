@@ -18,9 +18,11 @@ from django.urls import path, include
 # Add this for the sitemaps app
 from django.contrib.sitemaps.views import sitemap
 from blog.sitemaps import PostSitemap
+
 sitemaps = {
     'posts': PostSitemap,
 }
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls', namespace='blog')),
