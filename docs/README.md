@@ -839,8 +839,105 @@ urlpatterns = [
          views.post_comment, name='post_comment'),
          # ---------------------------------------------- #
          # NEW PATH
-         # ---------------------------------------------- #
+         # ----------------------------------------------
     path('feed/', LatestPostsFeed(), name='post_feed'),
 ]
 
 ```
+
+> Navigate to `http://127.0.0.1:8000/blog/feed/` in your browser. You should now see the RSS feed, including the last five blog posts:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    <title>My blog</title>
+    <link>http://localhost:8000/blog/</link>
+    <description>New posts of my blog.</description>
+    <atom:link href="http://localhost:8000/blog/feed/" rel="self"/>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 2 Jan 2020 09:56:40 +0000</lastBuildDate>
+    <item>
+      <title>Who was Django Reinhardt?</title>
+      <link>http://localhost:8000/blog/2020/1/2/who-was-django-
+      reinhardt/</link>
+      <description>Who was Django Reinhardt.</description>
+      <guid>http://localhost:8000/blog/2020/1/2/who-was-django-
+      reinhardt/</guid>
+    </item>
+    ...
+  </channel>
+</rss>
+
+```
+
+
+If you use Chrome, you will see the XML code. If you use Safari, it will ask you to install an RSS feed reader.
+
+Let’s install an RSS desktop client to view the RSS feed with a user-friendly interface. We will use Fluent Reader, which is a multi-platform RSS reader.
+
+[Download Fluent Reader for Linux, macOS, or Windows from](https://github.com/yang991178/fluent-reader/releases.)
+
+Click on the settings icon on the top right of the window.
+
+Enter http://127.0.0.1:8000/blog/feed/ in the Add source field and click on the Add button.
+
+You will see a new entry with the RSS feed of the blog in the table below the form
+
+Now, go back to the main screen of Fluent Reader. You should be able to see the posts included in the blog RSS feed
+
+> __The final step is to add an RSS feed subscription link to the blog’s sidebar.__
+
+Open the blog/base.html template and add the following code:
+
+```html
+{% load blog_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <link href="{% static "css/blog.css" %}" rel="stylesheet">
+</head>
+<body>
+  <div id="content">
+    {% block content %}
+    {% endblock %}
+  </div>
+  <div id="sidebar">
+    <h2>My blog</h2>
+    <p>
+      This is my blog.
+      I've written {% total_posts %} posts so far.
+    </p>
+    <!-- ------------------------------------------------------ -->
+    <!-- NEWLY ADDED CODE -->
+    <!-- ------------------------------------------------------ -->
+    <p>
+      <a href="{% url "blog:post_feed" %}">
+        Subscribe to my RSS feed
+      </a>
+    </p>
+    <!-- ------------------------------------------------------ -->
+    <h3>Latest posts</h3>
+    {% show_latest_posts 3 %}
+    <h3>Most commented posts</h3>
+    {% get_most_commented_posts as most_commented_posts %}
+    <ul>
+      {% for post in most_commented_posts %}
+        <li>
+          <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</body>
+</html>
+
+
+```
+
+
+> Now open http://127.0.0.1:8000/blog/ in your browser and take a look at the sidebar. The new link will take users to the blog’s fee
+
+[You can read more about the Django syndication feed framework at](https://docs.djangoproject.com/en/4.1/ref/contrib/syndication/)
